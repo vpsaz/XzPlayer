@@ -38,10 +38,25 @@
 
 ```html
 <!-- 播放容器 -->
-<div id="video" style="width: 100%; max-width: 800px; margin: auto;"></div>
+<div id="video"></div>
 
 <!-- 设置播放地址 -->
 <script>
   window.videoUrl = 'https://example.com/video.m3u8';
 </script>
 ```
+
+## 📎 项目说明
+
+- 本播放器仅提供播放功能，不托管任何视频资源。
+- 所有播放内容均由用户自行提供或引用外部平台链接。
+- 本项目为学习交流用途，请勿用于任何违反法律或平台协议的用途。
+- 视频资源播放失败、多段格式不兼容或版权受限问题与项目无关。
+
+## ❤️ 鸣谢与致谢
+
+感谢以下开源项目支持：
+- Artplayer
+- HLS.js
+- FLV.js
+- dash.js
