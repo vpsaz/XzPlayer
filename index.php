@@ -1,4 +1,9 @@
 <?php
+/**
+ * @author    校长bloG <1213235865@qq.com>
+ * @github    https://github.com/vpsaz/XzPlayer
+ */
+
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET');
 
