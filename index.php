@@ -19,7 +19,7 @@ if (empty($url)) {
     exit;
 }
 
-if (!filter_var($url, FILTER_VALIDATE_URL)) {
+if (!preg_match('/^https?:\/\//i', $url)) {
     header('Content-type: application/json;charset=utf-8');
     echo json_encode(['code' => 404, 'msg' => "请输入正确的URL"], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     exit;
