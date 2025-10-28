@@ -44,7 +44,6 @@ function curlPost($url, $postData = [], $timeout = 8) {
     return $response;
 }
 
-// 确定要使用的 API Key
 $apiKeyToUse = '';
 if (!empty($conf['baiapi_key'])) {
     $apiKeyToUse = $conf['baiapi_key'];
@@ -62,7 +61,7 @@ if (empty($apiKeyToUse)) {
     $postData = [
         'url' => $url,
         'keywords' => $baiapikeywords,
-        'type' => 'json'  // 添加type=json参数
+        'type' => 'json'
     ];
 
     $apiUrl = 'https://baiapi.cn/api/m3u8gl/?apikey=' . urlencode($apiKeyToUse);
