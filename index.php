@@ -28,7 +28,8 @@ if (!preg_match('/^https?:\/\//i', $url)) {
 $baiapikeywords = ''; // 自定义广告关键词 (多个使用","分隔)
 $baiapiapikey = ''; // 若单独使用该接口且需要开启广告过滤则需要填写 apikey
 
-function curlPost($url, $postData = [], $timeout = 8) {
+function curlPost($url, $postData = [], $timeout = 8)
+{
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
@@ -44,6 +45,21 @@ function curlPost($url, $postData = [], $timeout = 8) {
     return $response;
 }
 
+function checkUrlAvailability($url, $timeout = 5)
+{
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_NOBODY, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    return $httpCode === 200;
+}
+
 $apiKeyToUse = '';
 if (!empty($conf['baiapi_key'])) {
     $apiKeyToUse = $conf['baiapi_key'];
@@ -54,7 +70,7 @@ if (!empty($conf['baiapi_key'])) {
 if (empty($apiKeyToUse)) {
     $safe_url = htmlspecialchars($url, ENT_QUOTES);
 } else {
-    $maxAttempts = 2;
+    $maxAttempts = 3;
     $success = false;
     $file_url = '';
 
@@ -72,15 +88,28 @@ if (empty($apiKeyToUse)) {
             $result = json_decode($content, true);
             if (isset($result['code']) && $result['code'] == 200 && !empty($result['file_url'])) {
                 $file_url = $result['file_url'];
-                $success = true;
-                break;
+
+                if (checkUrlAvailability($file_url)) {
+                    $success = true;
+                    break;
+                } else {
+                    error_log("BaiAPI返回的m3u8文件不可用 (尝试 {$attempt}/{$maxAttempts}): " . $file_url);
+                    if ($attempt < $maxAttempts) {
+                        sleep(1);
+                    }
+                    continue;
+                }
             }
+        }
+
+        if ($attempt < $maxAttempts) {
+            sleep(1);
         }
     }
 
     if (!$success) {
         header('Content-type: application/json;charset=utf-8');
-        echo json_encode(['code' => 500, 'msg' => '无法从 BaiAPI 获取播放地址，请稍后再试'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        echo json_encode(['code' => 500, 'msg' => '无法获取可用的播放地址，请稍后再试'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         exit;
     }
 
