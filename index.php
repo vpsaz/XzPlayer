@@ -43,74 +43,40 @@ function curlPost($url, $postData = [], $timeout = 8) {
     return $response;
 }
 
-$cacheDir = __DIR__ . '/Cache';
-
 if (empty($conf['baiapi_key'])) {
     $safe_url = htmlspecialchars($url, ENT_QUOTES);
 } else {
-    if (!is_dir($cacheDir)) {
-        mkdir($cacheDir, 0755, true);
-    }
+    $maxAttempts = 2;
+    $success = false;
+    $file_url = '';
 
-    $cacheFileName = md5($url) . '.m3u8';
-    $cacheFilePath = $cacheDir . '/' . $cacheFileName;
+    $postData = [
+        'url' => $url,
+        'keywords' => $baiapikeywords,
+        'type' => 'json'  // 添加type=json参数
+    ];
 
-    $cacheExpire = 60;
+    $apiUrl = 'https://baiapi.cn/api/m3u8gl/?apikey=' . urlencode($conf['baiapi_key']);
 
-    if (!file_exists($cacheFilePath) || filemtime($cacheFilePath) < (time() - $cacheExpire)) {
-        $maxAttempts = 2;
-        $success = false;
-
-        $postData = [
-            'url' => $url,
-            'keywords' => $baiapikeywords,
-        ];
-
-        $apiUrl = 'https://baiapi.cn/api/m3u8gl/?apikey=' . urlencode($conf['baiapi_key']);
-
-        for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
-            $content = curlPost($apiUrl, $postData);
-            if ($content !== false && strlen($content) > 10) {
-                file_put_contents($cacheFilePath, $content);
-                chmod($cacheFilePath, 0644);
+    for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+        $content = curlPost($apiUrl, $postData);
+        if ($content !== false) {
+            $result = json_decode($content, true);
+            if (isset($result['code']) && $result['code'] == 200 && !empty($result['file_url'])) {
+                $file_url = $result['file_url'];
                 $success = true;
                 break;
             }
         }
-
-        if (!$success) {
-            header('Content-type: application/json;charset=utf-8');
-            echo json_encode(['code' => 500, 'msg' => '无法从 BaiAPI 获取播放地址，请稍后再试'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-            exit;
-        }
     }
 
-    $now = time();
-    foreach (glob($cacheDir . '/*.m3u8') as $file) {
-        if (is_file($file) && filemtime($file) < $now - $cacheExpire) {
-            @unlink($file);
-        }
-    }
-
-    $protocol = 'http://';
-    if (
-        (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
-        (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
-    ) {
-        $protocol = 'https://';
-    }
-
-    $host = $_SERVER['HTTP_HOST'];
-    $scriptDir = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
-
-    if (is_file($cacheFilePath)) {
-        $safe_url = $protocol . $host . $scriptDir . '/Cache/' . $cacheFileName;
-        $safe_url = htmlspecialchars($safe_url, ENT_QUOTES);
-    } else {
+    if (!$success) {
         header('Content-type: application/json;charset=utf-8');
-        echo json_encode(['code' => 500, 'msg' => '缓存文件不存在，请重试'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        echo json_encode(['code' => 500, 'msg' => '无法从 BaiAPI 获取播放地址，请稍后再试'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         exit;
     }
+
+    $safe_url = htmlspecialchars($file_url, ENT_QUOTES);
 }
 
 $currentDomain = $_SERVER['HTTP_HOST'];
