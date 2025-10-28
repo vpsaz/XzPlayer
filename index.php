@@ -135,11 +135,11 @@ if ($refererDomain === $currentDomain && !empty($titleParam)) {
     <meta name="description" content="<?php echo $conf['description']; ?>" />
     <meta name="keywords" content="<?php echo $conf['keywords']; ?>" />
     <link rel="shortcut icon" href="https://pic1.imgdb.cn/item/6812e03558cb8da5c8d5d3c3.png" type="image/x-icon" />
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.8/dist/hls.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flv.js@1.6.2/dist/flv.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dashjs@4.7.1/dist/dash.all.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/artplayer@5.2.3/dist/artplayer.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/artplayer-plugin-ads@latest/dist/artplayer-plugin-ads.min.js"></script>
+    <script src="https://v.vpsaz.cn/js/Mvideo/hls.min.js"></script>
+    <script src="https://v.vpsaz.cn/js/Mvideo/flv.min.js"></script>
+    <script src="https://v.vpsaz.cn/js/Mvideo/dash.all.min.js"></script>
+    <script src="https://v.vpsaz.cn/js/Mvideo/artplayer.min.js"></script>
+    <script src="https://v.vpsaz.cn/js/Mvideo/artplayer-plugin-ads.min.js"></script>
     <style>
         html, body {
             width: 100%;
