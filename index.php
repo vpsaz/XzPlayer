@@ -26,6 +26,7 @@ if (!preg_match('/^https?:\/\//i', $url)) {
 }
 
 $baiapikeywords = ''; // 自定义广告关键词 (多个使用","分隔)
+$baiapiapikey = ''; // 若单独使用该接口且需要开启广告过滤则需要填写 apikey
 
 function curlPost($url, $postData = [], $timeout = 8) {
     $ch = curl_init($url);
@@ -43,7 +44,15 @@ function curlPost($url, $postData = [], $timeout = 8) {
     return $response;
 }
 
-if (empty($conf['baiapi_key'])) {
+// 确定要使用的 API Key
+$apiKeyToUse = '';
+if (!empty($conf['baiapi_key'])) {
+    $apiKeyToUse = $conf['baiapi_key'];
+} elseif (!empty($baiapiapikey)) {
+    $apiKeyToUse = $baiapiapikey;
+}
+
+if (empty($apiKeyToUse)) {
     $safe_url = htmlspecialchars($url, ENT_QUOTES);
 } else {
     $maxAttempts = 2;
@@ -56,7 +65,7 @@ if (empty($conf['baiapi_key'])) {
         'type' => 'json'  // 添加type=json参数
     ];
 
-    $apiUrl = 'https://baiapi.cn/api/m3u8gl/?apikey=' . urlencode($conf['baiapi_key']);
+    $apiUrl = 'https://baiapi.cn/api/m3u8gl/?apikey=' . urlencode($apiKeyToUse);
 
     for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
         $content = curlPost($apiUrl, $postData);
