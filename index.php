@@ -7,11 +7,15 @@
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET');
 
-$config_file = __DIR__ . '/config.php';
-$conf = include($config_file);
+// ====================== 硬编码配置区（你只需要改这里） ======================
+$baiapiapikey = ''; // 必填：填写你的baiapi apikey
+$baiapikeywords = ''; // 可选：自定义广告关键词 (多个使用","分隔)
+$site_title = '自定义播放器标题'; // 可选：播放器页面标题
+$site_description = '播放器描述'; // 可选：页面描述
+$site_keywords = '播放器关键词'; // 可选：页面关键词
+// ===========================================================================
 
 $url = $_POST['url'] ?? $_GET['url'] ?? '';
-$titleParam = $_POST['title'] ?? $_GET['title'] ?? '';
 
 if (empty($url)) {
     header('Content-type: application/json;charset=utf-8');
@@ -24,9 +28,6 @@ if (!preg_match('/^https?:\/\//i', $url)) {
     echo json_encode(['code' => 404, 'msg' => "请输入正确的URL"], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     exit;
 }
-
-$baiapikeywords = ''; // 自定义广告关键词 (多个使用","分隔)
-$baiapiapikey = ''; // 若单独使用该接口且需要开启广告过滤则需要填写 apikey
 
 function curlPost($url, $postData = [], $timeout = 8)
 {
@@ -60,12 +61,7 @@ function checkUrlAvailability($url, $timeout = 5)
     return $httpCode === 200;
 }
 
-$apiKeyToUse = '';
-if (!empty($conf['baiapi_key'])) {
-    $apiKeyToUse = $conf['baiapi_key'];
-} elseif (!empty($baiapiapikey)) {
-    $apiKeyToUse = $baiapiapikey;
-}
+$apiKeyToUse = $baiapiapikey;
 
 if (empty($apiKeyToUse)) {
     $safe_url = htmlspecialchars($url, ENT_QUOTES);
@@ -116,17 +112,6 @@ if (empty($apiKeyToUse)) {
     $safe_url = htmlspecialchars($file_url, ENT_QUOTES);
 }
 
-$currentDomain = $_SERVER['HTTP_HOST'];
-$refererDomain = '';
-if (!empty($_SERVER['HTTP_REFERER'])) {
-    $refererDomain = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST) ?? '';
-}
-
-if ($refererDomain === $currentDomain && !empty($titleParam)) {
-    $title = '正在播放：' . htmlspecialchars($titleParam, ENT_QUOTES);
-} else {
-    $title = htmlspecialchars($conf['site_title'], ENT_QUOTES) . ' - 播放器';
-}
 ?>
 <!DOCTYPE html>
 <html lang="zh">
@@ -134,9 +119,9 @@ if ($refererDomain === $currentDomain && !empty($titleParam)) {
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><?php echo $title; ?></title>
-    <meta name="description" content="<?php echo $conf['description']; ?>" />
-    <meta name="keywords" content="<?php echo $conf['keywords']; ?>" />
+    <title><?php echo htmlspecialchars($site_title, ENT_QUOTES); ?></title>
+    <meta name="description" content="<?php echo htmlspecialchars($site_description, ENT_QUOTES); ?>" />
+    <meta name="keywords" content="<?php echo htmlspecialchars($site_keywords, ENT_QUOTES); ?>" />
     <link rel="shortcut icon" href="https://pic1.imgdb.cn/item/6812e03558cb8da5c8d5d3c3.png" type="image/x-icon" />
     <script src="https://baiapi.cn/js-lib/Mvideo/hls.min.js"></script>
     <script src="https://baiapi.cn/js-lib/Mvideo/flv.min.js"></script>
