@@ -124,8 +124,6 @@ if (empty($apiKeyToUse)) {
     <meta name="keywords" content="<?php echo htmlspecialchars($site_keywords, ENT_QUOTES); ?>" />
     <link rel="shortcut icon" href="https://pic1.imgdb.cn/item/6812e03558cb8da5c8d5d3c3.png" type="image/x-icon" />
     <script src="https://baiapi.cn/js-lib/Mvideo/hls.min.js"></script>
-    <script src="https://baiapi.cn/js-lib/Mvideo/flv.min.js"></script>
-    <script src="https://baiapi.cn/js-lib/Mvideo/dash.all.min.js"></script>
     <script src="https://baiapi.cn/js-lib/Mvideo/artplayer.min.js"></script>
     <script src="https://baiapi.cn/js-lib/Mvideo/artplayer-plugin-ads.min.js"></script>
     <style>
