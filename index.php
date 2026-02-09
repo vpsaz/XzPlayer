@@ -7,11 +7,11 @@
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET');
 
-$api_url = 'https://baiapi.cn/api/m3u8af/'; // 必填：填写你的baiapi apikey 广告过滤功能
-$api_key = ''; // 必填：填写你的baiapi apikey 广告过滤功能
-$site_title = 'M3U8视频播放器'; // 可选：播放器页面标题
-$site_description = '基于API的M3U8视频播放页面'; // 可选：页面描述
-$site_keywords = 'M3U8,播放器,视频播放'; // 可选：页面关键词
+$api_url = 'https://baiapi.cn/api/m3u8af/'; // 必填：填写接口地址 (可替换本地过滤接口)
+$api_key = ''; // 必填：填写你的 apikey 广告过滤密钥
+$site_title = 'XzPlayer'; // 可选：播放器页面标题
+$site_description = 'M3U8视频播放器'; // 可选：页面描述
+$site_keywords = 'XzPlayer,M3U8,播放器,视频播放'; // 可选：页面关键词
 
 $safe_url = '';
 
