@@ -9,7 +9,6 @@ header('Access-Control-Allow-Methods: POST, GET');
 
 // ====================== 硬编码配置区（你只需要改这里） ======================
 $baiapiapikey = ''; // 必填：填写你的baiapi apikey 广告过滤功能
-$baiapikeywords = ''; // 可选：自定义广告关键词 (多个使用","分隔)
 $site_title = '自定义播放器标题'; // 可选：播放器页面标题
 $site_description = '播放器描述'; // 可选：页面描述
 $site_keywords = '播放器关键词'; // 可选：页面关键词
@@ -70,9 +69,9 @@ if (empty($apiKeyToUse)) {
     $success = false;
     $file_url = '';
 
+    // 移除了keywords参数
     $postData = [
         'url' => $url,
-        'keywords' => $baiapikeywords,
         'type' => 'json'
     ];
 
