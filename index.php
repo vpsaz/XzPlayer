@@ -76,7 +76,7 @@ if (empty($apiKeyToUse)) {
         'type' => 'json'
     ];
 
-    $apiUrl = 'https://baiapi.cn/api/m3u8gl/?apikey=' . urlencode($apiKeyToUse);
+    $apiUrl = 'https://baiapi.cn/api/m3u8gl/' . '?apikey=' . urlencode($apiKeyToUse); //如果是本地部署的过滤接口则替换 https://baiapi.cn/api/m3u8gl/ 为你的接口地址
 
     for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
         $content = curlPost($apiUrl, $postData);
