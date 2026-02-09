@@ -7,8 +7,8 @@
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET');
 
-$api_url = 'https://baiyy.cn/api-proxy.php'; // 必填：填写你的baiapi apikey 广告过滤功能
-$api_key = '933953b2f7ce3cafa1ae606f78c7be1d'; // 必填：填写你的baiapi apikey 广告过滤功能
+$api_url = 'https://baiapi.cn/api/m3u8af/'; // 必填：填写你的baiapi apikey 广告过滤功能
+$api_key = ''; // 必填：填写你的baiapi apikey 广告过滤功能
 $site_title = 'M3U8视频播放器'; // 可选：播放器页面标题
 $site_description = '基于API的M3U8视频播放页面'; // 可选：页面描述
 $site_keywords = 'M3U8,播放器,视频播放'; // 可选：页面关键词
