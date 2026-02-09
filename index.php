@@ -7,110 +7,62 @@
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET');
 
-// ====================== 硬编码配置区（你只需要改这里） ======================
-$baiapiapikey = ''; // 必填：填写你的baiapi apikey 广告过滤功能
-$site_title = '自定义播放器标题'; // 可选：播放器页面标题
-$site_description = '播放器描述'; // 可选：页面描述
-$site_keywords = '播放器关键词'; // 可选：页面关键词
-// ===========================================================================
+$api_url = 'https://baiyy.cn/api-proxy.php'; // 必填：填写你的baiapi apikey 广告过滤功能
+$api_key = '933953b2f7ce3cafa1ae606f78c7be1d'; // 必填：填写你的baiapi apikey 广告过滤功能
+$site_title = 'M3U8视频播放器'; // 可选：播放器页面标题
+$site_description = '基于API的M3U8视频播放页面'; // 可选：页面描述
+$site_keywords = 'M3U8,播放器,视频播放'; // 可选：页面关键词
 
-$url = $_POST['url'] ?? $_GET['url'] ?? '';
+$safe_url = '';
 
-if (empty($url)) {
-    header('Content-type: application/json;charset=utf-8');
-    echo json_encode(['code' => 404, 'msg' => "请输入URL"], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    exit;
-}
+$video_url = isset($_REQUEST['url']) ? trim($_REQUEST['url']) : '';
 
-if (!preg_match('/^https?:\/\//i', $url)) {
-    header('Content-type: application/json;charset=utf-8');
-    echo json_encode(['code' => 404, 'msg' => "请输入正确的URL"], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-function curlPost($url, $postData = [], $timeout = 8)
-{
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
-    $response = curl_exec($ch);
-    $errno = curl_errno($ch);
-    curl_close($ch);
-    if ($errno) {
-        return false;
-    }
-    return $response;
-}
-
-function checkUrlAvailability($url, $timeout = 5)
-{
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_NOBODY, true);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    return $httpCode === 200;
-}
-
-$apiKeyToUse = $baiapiapikey;
-
-if (empty($apiKeyToUse)) {
-    $safe_url = htmlspecialchars($url, ENT_QUOTES);
-} else {
-    $maxAttempts = 3;
-    $success = false;
-    $file_url = '';
-
-    // 移除了keywords参数
-    $postData = [
-        'url' => $url,
-        'type' => 'json'
+if (!empty($video_url) && preg_match('/^https?:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/.*)?$/', $video_url)) {
+    $post_data = [
+        'url' => $video_url,
+        'type' => 'json',
+        'apikey' => $api_key
     ];
 
-    $apiUrl = 'https://baiapi.cn/api/m3u8gl/' . '?apikey=' . urlencode($apiKeyToUse);  //可替换 https://baiapi.cn/api/m3u8gl/ 为本地接口
+    $ch = curl_init();
+    
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $api_url,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => http_build_query($post_data),
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_SSL_VERIFYHOST => false,
+        CURLOPT_TIMEOUT => 30,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS => 5,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/x-www-form-urlencoded',
+            'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Referer: ' . $api_url,
+            'Accept: application/json, text/plain, */*'
+        ]
+    ]);
 
-    for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
-        $content = curlPost($apiUrl, $postData);
-        if ($content !== false) {
-            $result = json_decode($content, true);
-            if (isset($result['code']) && $result['code'] == 200 && !empty($result['file_url'])) {
-                $file_url = $result['file_url'];
-
-                if (checkUrlAvailability($file_url)) {
-                    $success = true;
-                    break;
-                } else {
-                    error_log("BaiAPI返回的m3u8文件不可用 (尝试 {$attempt}/{$maxAttempts}): " . $file_url);
-                    if ($attempt < $maxAttempts) {
-                        sleep(1);
-                    }
-                    continue;
+    $response = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    
+    if (curl_errno($ch)) {
+        curl_close($ch);
+    } else {
+        curl_close($ch);
+        
+        if ($http_code == 200) {
+            $result = json_decode($response, true);
+            
+            if (json_last_error() === JSON_ERROR_NONE && isset($result['code']) && $result['code'] == 200) {
+                if (isset($result['file_url']) && filter_var($result['file_url'], FILTER_VALIDATE_URL)) {
+                    $safe_url = $result['file_url'];
                 }
             }
         }
-
-        if ($attempt < $maxAttempts) {
-            sleep(1);
-        }
     }
-
-    if (!$success) {
-        header('Content-type: application/json;charset=utf-8');
-        echo json_encode(['code' => 500, 'msg' => '无法获取可用的播放地址，请稍后再试'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-        exit;
-    }
-
-    $safe_url = htmlspecialchars($file_url, ENT_QUOTES);
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="zh">
